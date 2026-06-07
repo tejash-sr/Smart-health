@@ -4,7 +4,6 @@ import 'package:confetti/confetti.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/time_utils.dart';
-import '../../core/widgets/glass_card.dart';
 import '../../models/models.dart';
 import '../../providers/app_provider.dart';
 

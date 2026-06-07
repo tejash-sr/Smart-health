@@ -357,7 +357,7 @@ class PointsTransaction {
   });
 }
 
-class Notification {
+class AppNotification {
   final String id;
   final String title;
   final String body;
@@ -366,7 +366,7 @@ class Notification {
   final Color color;
   bool read;
 
-  Notification({
+  AppNotification({
     required this.id,
     required this.title,
     required this.body,

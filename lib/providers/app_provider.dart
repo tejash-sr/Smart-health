@@ -20,7 +20,7 @@ class AppProvider extends ChangeNotifier {
   late List<CoffeeMatch> _coffeeMatches;
   late List<PersonalGoal> _personalGoals;
   late List<PointsTransaction> _pointsHistory;
-  late List<Notification> _notifications;
+  late List<AppNotification> _notifications;
   late StepRecord _todaySteps;
   late List<WaterLog> _waterLogs;
 
@@ -79,7 +79,7 @@ class AppProvider extends ChangeNotifier {
   List<CoffeeMatch> get coffeeMatches => _coffeeMatches;
   List<PersonalGoal> get personalGoals => _personalGoals;
   List<PointsTransaction> get pointsHistory => _pointsHistory;
-  List<Notification> get notifications => _notifications;
+  List<AppNotification> get notifications => _notifications;
   int get unreadNotifications =>
       _notifications.where((n) => !n.read).length;
   StepRecord get todaySteps => _todaySteps;

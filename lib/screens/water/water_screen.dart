@@ -177,7 +177,7 @@ class WaterScreen extends StatelessWidget {
                       ),
                       Text(
                         '+${(log.amountMl / 100).round()} pts',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.water,
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
@@ -197,14 +197,14 @@ class WaterScreen extends StatelessWidget {
                 AppColors.error.withValues(alpha: 0.05),
               ],
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Text('🔥', style: TextStyle(fontSize: 36)),
-                const SizedBox(width: 16),
+                Text('🔥', style: TextStyle(fontSize: 36)),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         '8-day Hydration Streak',
                         style: TextStyle(
@@ -270,7 +270,7 @@ class WaterScreen extends StatelessWidget {
             ),
             Text(
               '${ml}ml',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 10,
                 color: AppColors.water,
                 fontWeight: FontWeight.w600,

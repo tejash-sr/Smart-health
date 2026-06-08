@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/time_utils.dart';
@@ -211,7 +210,7 @@ class HomeScreen extends StatelessWidget {
             ),
             child: Text(
               action,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.primaryLight,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -264,9 +263,9 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(Icons.star_rounded,
                             color: Colors.white, size: 14),
                         SizedBox(width: 4),
@@ -473,7 +472,7 @@ class HomeScreen extends StatelessWidget {
               const Spacer(),
               Text(
                 '${(app.waterProgress * 100).round()}%',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.water,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -487,7 +486,7 @@ class HomeScreen extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '${(app.totalWaterMl / 1000).toStringAsFixed(1)}',
+                (app.totalWaterMl / 1000).toStringAsFixed(1),
                 style: TextStyle(
                   color: isDark
                       ? AppColors.textPrimaryDark
@@ -724,10 +723,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildLeaderboardPreview(BuildContext c, AppProvider app) {
-    final top = app.posts; // dummy length
-    final leaderboard = [
-      ...List.generate(3, (i) => i),
-    ];
     final isDark = Theme.of(c).brightness == Brightness.dark;
     final users = app.posts.map((p) => p.author).toList();
     final medals = ['🥇', '🥈', '🥉'];
@@ -777,7 +772,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 Text(
                   TimeUtils.formatNumberWithCommas(u.totalPoints),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 14,
                     color: AppColors.accent,

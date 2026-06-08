@@ -35,8 +35,8 @@ class PointsHistoryScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: const [
+                      const Row(
+                        children: [
                           Icon(Icons.trending_up_rounded,
                               color: Colors.white, size: 16),
                           SizedBox(width: 4),
@@ -71,8 +71,8 @@ class PointsHistoryScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: const [
+                      const Row(
+                        children: [
                           Icon(Icons.shopping_bag_outlined,
                               color: Colors.white, size: 16),
                           SizedBox(width: 4),

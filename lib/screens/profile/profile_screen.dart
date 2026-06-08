@@ -439,7 +439,7 @@ class ProfileScreen extends StatelessWidget {
               trailing: Switch.adaptive(
                 value: true,
                 onChanged: (_) {},
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
               ),
             ),
             ListTile(
@@ -448,7 +448,7 @@ class ProfileScreen extends StatelessWidget {
               trailing: Switch.adaptive(
                 value: false,
                 onChanged: (_) {},
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
               ),
             ),
             ListTile(

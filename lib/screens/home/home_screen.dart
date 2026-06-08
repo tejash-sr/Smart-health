@@ -210,7 +210,7 @@ class HomeScreen extends StatelessWidget {
             ),
             child: Text(
               action,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AppColors.primaryLight,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -263,9 +263,9 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(Icons.star_rounded,
                             color: Colors.white, size: 14),
                         SizedBox(width: 4),
@@ -472,7 +472,7 @@ class HomeScreen extends StatelessWidget {
               const Spacer(),
               Text(
                 '${(app.waterProgress * 100).round()}%',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.water,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -772,7 +772,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 Text(
                   TimeUtils.formatNumberWithCommas(u.totalPoints),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 14,
                     color: AppColors.accent,

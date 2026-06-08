@@ -286,9 +286,9 @@ class _CoffeeScreenState extends State<CoffeeScreen> {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 Icon(
                   Icons.calendar_today_rounded,
                   size: 14,

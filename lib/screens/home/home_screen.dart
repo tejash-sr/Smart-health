@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/time_utils.dart';
@@ -487,7 +486,7 @@ class HomeScreen extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '${(app.totalWaterMl / 1000).toStringAsFixed(1)}',
+                (app.totalWaterMl / 1000).toStringAsFixed(1),
                 style: TextStyle(
                   color: isDark
                       ? AppColors.textPrimaryDark
@@ -724,10 +723,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildLeaderboardPreview(BuildContext c, AppProvider app) {
-    final top = app.posts; // dummy length
-    final leaderboard = [
-      ...List.generate(3, (i) => i),
-    ];
     final isDark = Theme.of(c).brightness == Brightness.dark;
     final users = app.posts.map((p) => p.author).toList();
     final medals = ['🥇', '🥈', '🥉'];

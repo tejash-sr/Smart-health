@@ -119,7 +119,7 @@ class _CoffeeScreenState extends State<CoffeeScreen> {
                 ),
                 Switch.adaptive(
                   value: _optedIn,
-                  activeColor: AppColors.coffee,
+                  activeThumbColor: AppColors.coffee,
                   onChanged: (v) => setState(() => _optedIn = v),
                 ),
               ],

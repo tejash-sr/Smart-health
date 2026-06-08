@@ -243,7 +243,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.local_fire_department_rounded,
+                            const Icon(Icons.local_fire_department_rounded,
                                 color: AppColors.error, size: 12),
                             const SizedBox(width: 2),
                             Text(

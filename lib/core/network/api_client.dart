@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../error/exceptions.dart';
+import '../storage/local_storage.dart';
+import '../di/injection_container.dart';
 
 class ApiClient {
   final http.Client _client;
@@ -9,11 +11,14 @@ class ApiClient {
   ApiClient({http.Client? client, required this.baseUrl})
       : _client = client ?? http.Client();
 
-  Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // 'Authorization': 'Bearer $_token', // To be added based on auth state
-      };
+  Map<String, String> get _headers {
+    final token = sl.localStorage.getToken();
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
 
   Future<dynamic> get(String endpoint) async {
     try {

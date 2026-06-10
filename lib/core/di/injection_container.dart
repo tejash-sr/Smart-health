@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import '../network/api_client.dart';
+import '../storage/local_storage.dart';
 import '../../data/repositories/user_repository.dart';
 import '../../data/repositories/mock_user_repository.dart';
 import '../../data/repositories/challenge_repository.dart';
@@ -13,6 +14,7 @@ class ServiceLocator {
   ServiceLocator._internal();
 
   late final ApiClient apiClient;
+  late final LocalStorage localStorage;
   
   // Repositories
   late final UserRepository userRepository;
@@ -21,6 +23,7 @@ class ServiceLocator {
 
   Future<void> init() async {
     // Core
+    localStorage = await LocalStorage.init();
     final httpClient = http.Client();
     apiClient = ApiClient(client: httpClient, baseUrl: 'https://api.pulse.com/v1');
 

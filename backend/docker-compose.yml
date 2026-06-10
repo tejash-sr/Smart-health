@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: pulse_postgres
+    environment:
+      POSTGRES_USER: pulse_user
+      POSTGRES_PASSWORD: pulse_password
+      POSTGRES_DB: pulse_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pulse_pg_data:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: pulse_keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/pulse_db
+      KC_DB_USERNAME: pulse_user
+      KC_DB_PASSWORD: pulse_password
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    command: start-dev
+
+volumes:
+  pulse_pg_data:

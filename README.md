@@ -157,7 +157,7 @@ Bundle identifier is consistent across stores: `com.pulseengage.engage`.
 | V2 — Community (social wall, events, recognition) | ✅ Complete |
 | V3 — Knowledge (doubts, ideas) | ✅ Complete |
 | V4 — Connection (coffee roulette, goals) | ✅ Complete |
-| V5 — Backend (Spring Boot + PostgreSQL + Keycloak) | 🚧 Planned |
+| V5 — Backend (Spring Boot + PostgreSQL + Keycloak) | 🏗️ In Progress |
 | V6 — Hardware sensor integration (Android pedometer / iOS HealthKit & CoreMotion) | 🚧 Planned |
 | V7 — Admin dashboard (challenge/reward management) | 🚧 Planned |
 

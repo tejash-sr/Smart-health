@@ -1,0 +1,31 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: pulse-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pulse_db
+    username: pulse_user
+    password: pulse_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/pulse-engage # Keycloak config
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

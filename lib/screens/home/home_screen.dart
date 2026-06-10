@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/time_utils.dart';
 import '../../core/widgets/glass_card.dart';
+import '../../models/models.dart';
 import '../../providers/app_provider.dart';
 import '../steps/steps_screen.dart';
 import '../water/water_screen.dart';
@@ -609,7 +610,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChallengeCard(BuildContext c, ch) {
+  Widget _buildChallengeCard(BuildContext c, Challenge ch) {
     return Container(
       width: 240,
       padding: const EdgeInsets.all(16),

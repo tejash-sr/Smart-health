@@ -320,7 +320,12 @@ class _CoffeeScreenState extends State<CoffeeScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Skipped current match. Finding next...')),
+                    );
+                    Navigator.pop(context);
+                  },
                   child: const Text(
                     'Skip',
                     style: TextStyle(
@@ -339,7 +344,12 @@ class _CoffeeScreenState extends State<CoffeeScreen> {
                     foregroundColor: AppColors.coffee,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Message sent to Say Hi!')),
+                    );
+                    Navigator.pop(context);
+                  },
                   icon: const Icon(Icons.chat_bubble_rounded, size: 18),
                   label: const Text(
                     'Say Hi',

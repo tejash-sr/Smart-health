@@ -455,7 +455,11 @@ class ProfileScreen extends StatelessWidget {
               leading: const Icon(Icons.language_rounded),
               title: const Text('Language'),
               trailing: const Text('English'),
-              onTap: () {},
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Language settings coming soon')),
+                );
+              },
             ),
             const SizedBox(height: 8),
           ],

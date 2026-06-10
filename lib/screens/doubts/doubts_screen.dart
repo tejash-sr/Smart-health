@@ -21,7 +21,11 @@ class DoubtsScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.search_rounded),
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Search doubts coming soon')),
+              );
+            },
           ),
         ],
       ),
@@ -42,7 +46,11 @@ class DoubtsScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: GlassCard(
-              onTap: () {},
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Doubt details coming soon')),
+                );
+              },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

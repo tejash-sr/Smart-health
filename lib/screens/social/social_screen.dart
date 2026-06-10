@@ -21,9 +21,11 @@ class _SocialScreenState extends State<SocialScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.brandGradient,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: AppColors.brandGradient,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -308,7 +310,11 @@ class _SocialScreenState extends State<SocialScreen> {
                       ? AppColors.textSecondaryDark
                       : AppColors.textSecondaryLight,
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Share functionality coming soon!')),
+                  );
+                },
               ),
             ],
           ),

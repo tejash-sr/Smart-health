@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/time_utils.dart';
 import '../../core/widgets/glass_card.dart';
+import '../../models/models.dart';
 import '../../providers/app_provider.dart';
 import '../../services/mock_data.dart';
 
@@ -241,7 +242,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 
-  Widget _podium(dynamic entry, int rank, double height, Color color) {
+  Widget _podium(LeaderboardEntry? entry, int rank, double height, Color color) {
     if (entry == null) return const SizedBox.shrink();
     final medals = {1: '🥇', 2: '🥈', 3: '🥉'};
     return Column(

@@ -1,9 +1,12 @@
-// This is a basic Flutter widget test.
+// Smoke test for the Pulse Engage application.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Verifies that the root [PulseApp] widget boots without throwing and renders
+// a MaterialApp. PulseApp internally provides its own AppProvider, so no
+// external scope is required here.
+//
+// The splash screen schedules a 2.4s Future.delayed for auto-navigation;
+// the test runs all pending timers via pumpAndSettle before exiting so the
+// framework doesn't flag pending-timer assertions.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,20 +14,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pulse_engage/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('PulseApp smoke test - boots and renders MaterialApp',
+      (WidgetTester tester) async {
+    // Build the root app and pump the first frame.
+    await tester.pumpWidget(const PulseApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // A single MaterialApp should be present at the root of the widget tree.
+    expect(find.byType(MaterialApp), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Advance well past the splash auto-navigate delay (2.4s) so any
+    // Future.delayed timers fire and the binding has no pending timers.
+    await tester.pump(const Duration(seconds: 3));
+    // Settle remaining animations / routes (capped to avoid infinite loops
+    // if animations are continuous).
+    await tester.pumpAndSettle(const Duration(seconds: 5));
   });
 }

@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../core/theme/app_colors.dart';
 
@@ -799,10 +798,10 @@ class MockData {
   }
 
   // ===== Notifications =====
-  static List<Notification> getNotifications() {
+  static List<AppNotification> getNotifications() {
     final now = DateTime.now();
     return [
-      Notification(
+      AppNotification(
         id: 'n1',
         title: 'New Challenge!',
         body: 'Weekend Warrior starts in 3 days. Be ready.',
@@ -810,7 +809,7 @@ class MockData {
         time: now.subtract(const Duration(minutes: 15)),
         color: AppColors.secondary,
       ),
-      Notification(
+      AppNotification(
         id: 'n2',
         title: 'Coffee match found',
         body: 'You\'re paired with Vikram Singh this week.',
@@ -818,7 +817,7 @@ class MockData {
         time: now.subtract(const Duration(hours: 2)),
         color: AppColors.coffee,
       ),
-      Notification(
+      AppNotification(
         id: 'n3',
         title: 'Points earned',
         body: '+78 points for today\'s steps.',
@@ -827,7 +826,7 @@ class MockData {
         color: AppColors.accent,
         read: true,
       ),
-      Notification(
+      AppNotification(
         id: 'n4',
         title: 'Your idea got 50 upvotes!',
         body: 'Quiet rooms for deep work is trending.',

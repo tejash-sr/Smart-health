@@ -129,7 +129,23 @@ flutter run -d chrome
 
 # Build release APK
 flutter build apk --release
+
+# Build release Web bundle
+flutter build web --release
+
+# Build iOS (release, on macOS only)
+flutter build ios --release --no-codesign
 ```
+
+### 📱 Supported Platforms
+
+| Platform | Min Version | Status |
+|----------|-------------|--------|
+| Android  | API 21 (5.0 Lollipop) | ✅ Production-ready |
+| iOS      | 13.0+ | ✅ Production-ready |
+| Web      | Chrome / Safari / Firefox / Edge (latest) | ✅ Production-ready |
+
+Bundle identifier is consistent across stores: `com.pulseengage.engage`.
 
 ---
 
@@ -142,7 +158,7 @@ flutter build apk --release
 | V3 — Knowledge (doubts, ideas) | ✅ Complete |
 | V4 — Connection (coffee roulette, goals) | ✅ Complete |
 | V5 — Backend (Spring Boot + PostgreSQL + Keycloak) | 🚧 Planned |
-| V6 — Hardware sensor integration (Android pedometer) | 🚧 Planned |
+| V6 — Hardware sensor integration (Android pedometer / iOS HealthKit & CoreMotion) | 🚧 Planned |
 | V7 — Admin dashboard (challenge/reward management) | 🚧 Planned |
 
 ---

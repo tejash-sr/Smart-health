@@ -9,7 +9,7 @@ class MockChallengeRepository implements ChallengeRepository {
   Future<Result<List<Challenge>>> getChallenges() async {
     try {
       await Future.delayed(const Duration(milliseconds: 600));
-      return Success(MockData.challenges);
+      return Success(MockData.getChallenges());
     } catch (e) {
       return Failure(
         exception: ServerException(message: e.toString()),

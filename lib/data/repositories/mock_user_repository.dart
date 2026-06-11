@@ -55,7 +55,7 @@ class MockUserRepository implements UserRepository {
   Future<Result<List<PointsTransaction>>> getPointsHistory(String userId) async {
     try {
       await Future.delayed(const Duration(milliseconds: 500));
-      return Success(MockData.pointsHistory);
+      return Success(MockData.getPointsHistory());
     } catch (e) {
       return Failure(
         exception: ServerException(message: e.toString()),

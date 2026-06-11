@@ -9,7 +9,7 @@ class MockSocialRepository implements SocialRepository {
   Future<Result<List<SocialPost>>> getFeed() async {
     try {
       await Future.delayed(const Duration(milliseconds: 500));
-      return Success(MockData.posts);
+      return Success(MockData.getSocialPosts());
     } catch (e) {
       return Failure(
         exception: ServerException(message: e.toString()),

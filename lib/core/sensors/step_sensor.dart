@@ -1,39 +1,79 @@
 import 'dart:async';
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pedometer/pedometer.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+/// Pedometer-based step sensor for the Pulse Engage hardware-integration
+/// layer (V6).
+///
+/// On Android the service requests the `ACTIVITY_RECOGNITION` runtime
+/// permission and subscribes to:
+///   - `Pedometer.stepCountStream` (cumulative steps since boot)
+///   - `Pedometer.pedestrianStatusStream` (walking / stopped / unknown)
+///
+/// On web and any other unsupported platform the service is a no-op:
+///   - [isSupported] returns `false`
+///   - [initPlatformState] returns immediately
+///   - [stepStream] never emits
+///
+/// Callers should always check [isSupported] before relying on sensor data
+/// and fall back to mock / manual step entry on web and (today) iOS.
 class StepSensorService {
-  StreamSubscription<StepCount>? _stepCountStream;
-  StreamSubscription<PedestrianStatus>? _pedestrianStatusStream;
+  StepSensorService();
+
+  StreamSubscription<StepCount>? _stepCountSub;
+  StreamSubscription<PedestrianStatus>? _pedestrianStatusSub;
 
   int _steps = 0;
-  String _status = 'Unknown';
+  String _status = 'unknown';
 
+  final StreamController<int> _stepController =
+      StreamController<int>.broadcast();
+
+  /// Current cumulative step count since the device booted.
   int get currentSteps => _steps;
+
+  /// Last reported pedestrian status. One of: `walking`, `stopped`,
+  /// `unknown`.
   String get pedestrianStatus => _status;
 
-  final StreamController<int> _stepController = StreamController<int>.broadcast();
+  /// Broadcast stream of step counts. Emits whenever the OS pushes a new
+  /// reading from the hardware step counter.
   Stream<int> get stepStream => _stepController.stream;
 
+  /// Whether the current platform exposes a hardware step sensor that
+  /// this service can read from. Currently Android only.
+  bool get isSupported => !kIsWeb && Platform.isAndroid;
+
+  /// Requests the runtime permission required to read the activity
+  /// recognition sensor. Returns `true` if the permission was granted
+  /// (and we are on a supported platform).
   Future<bool> checkPermission() async {
-    if (await Permission.activityRecognition.request().isGranted) {
-      return true;
-    }
-    return false;
+    if (!isSupported) return false;
+    final status = await Permission.activityRecognition.request();
+    return status.isGranted;
   }
 
+  /// Initialises the hardware streams. Safe to call on every platform:
+  /// on web / iOS it returns immediately and does nothing.
   Future<void> initPlatformState() async {
-    bool granted = await checkPermission();
+    if (!isSupported) return;
+
+    final granted = await checkPermission();
     if (!granted) return;
 
-    _pedestrianStatusStream = Pedometer.pedestrianStatusStream.listen(
+    _pedestrianStatusSub = Pedometer.pedestrianStatusStream.listen(
       _onPedestrianStatusChanged,
       onError: _onPedestrianStatusError,
+      cancelOnError: false,
     );
 
-    _stepCountStream = Pedometer.stepCountStream.listen(
+    _stepCountSub = Pedometer.stepCountStream.listen(
       _onStepCount,
       onError: _onStepCountError,
+      cancelOnError: false,
     );
   }
 
@@ -46,18 +86,17 @@ class StepSensorService {
     _status = event.status;
   }
 
-  void _onPedestrianStatusError(error) {
-    _status = 'Pedestrian Status not available';
+  void _onPedestrianStatusError(Object error) {
+    _status = 'unknown';
   }
 
-  void _onStepCountError(error) {
-    _steps = 0;
+  void _onStepCountError(Object error) {
     _stepController.addError(error);
   }
 
-  void dispose() {
-    _stepCountStream?.cancel();
-    _pedestrianStatusStream?.cancel();
-    _stepController.close();
+  Future<void> dispose() async {
+    await _stepCountSub?.cancel();
+    await _pedestrianStatusSub?.cancel();
+    await _stepController.close();
   }
 }

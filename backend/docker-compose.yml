@@ -1,33 +1,88 @@
-version: '3.8'
+# ─────────────────────────────────────────────────────────────────────────────
+# Pulse Engage — local dev / single-host production stack
+#
+# Services:
+#   postgres  : PostgreSQL 15 (alpine) — shared by app + Keycloak
+#   keycloak  : Keycloak 23 — OAuth2 / OIDC provider on :8081
+#   backend   : Spring Boot 3.3 app on :8080
+#
+# Bring up:  docker compose up -d --build
+# Tear down: docker compose down -v
+# ─────────────────────────────────────────────────────────────────────────────
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: pulse_postgres
     environment:
-      POSTGRES_USER: pulse_user
-      POSTGRES_PASSWORD: pulse_password
-      POSTGRES_DB: pulse_db
+      POSTGRES_USER: ${POSTGRES_USER:-pulse_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pulse_password}
+      POSTGRES_DB: ${POSTGRES_DB:-pulse_db}
     ports:
       - "5432:5432"
     volumes:
       - pulse_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pulse_user} -d ${POSTGRES_DB:-pulse_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: pulse_keycloak
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/pulse_db
-      KC_DB_USERNAME: pulse_user
-      KC_DB_PASSWORD: pulse_password
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-pulse_db}
+      KC_DB_USERNAME: ${POSTGRES_USER:-pulse_user}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-pulse_password}
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_HTTP_PORT: "8080"
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: start-dev
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q 'UP'"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 45s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pulse_backend
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      PULSE_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-pulse_db}
+      PULSE_DB_USERNAME: ${POSTGRES_USER:-pulse_user}
+      PULSE_DB_PASSWORD: ${POSTGRES_PASSWORD:-pulse_password}
+      PULSE_KEYCLOAK_ISSUER_URI: ${PULSE_KEYCLOAK_ISSUER_URI:-http://keycloak:8080/realms/pulse}
+      PULSE_KEYCLOAK_JWK_SET_URI: ${PULSE_KEYCLOAK_JWK_SET_URI:-http://keycloak:8080/realms/pulse/protocol/openid-connect/certs}
+      PULSE_CORS_ALLOWED_ORIGINS: ${PULSE_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5060}
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
-    command: start-dev
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
 
 volumes:
   pulse_pg_data:

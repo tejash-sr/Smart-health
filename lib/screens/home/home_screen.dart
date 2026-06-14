@@ -145,7 +145,13 @@ class HomeScreen extends StatelessWidget {
                 context,
                 'Active Challenges',
                 action: 'See all',
-                onAction: () {},
+                onAction: () {
+                  // Usually, would navigate to the Challenges Tab in MainShell.
+                  // For now, we will notify via snackbar or push a standalone route.
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Navigate to Challenges tab!')),
+                  );
+                },
               ),
               const SizedBox(height: 12),
               SizedBox(

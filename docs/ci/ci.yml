@@ -1,0 +1,110 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Pulse Engage — Continuous Integration workflow (reference copy)
+#
+# To activate, copy this file to .github/workflows/ci.yml and push from a
+# clone whose credentials include the `workflow` scope (a personal access
+# token with that scope is enough; GitHub Apps without it are rejected).
+#
+# Two independent jobs run in parallel on every push / PR:
+#   1. flutter : pub get → format-check → analyze → test → build web (release)
+#   2. backend : Spring Boot gradle build with cached deps
+#
+# Versions are pinned to the environment we ship against (Flutter 3.35.4 /
+# Dart 3.9.2 / Java 21). Do NOT bump these without an environment review.
+# ──────────────────────────────────────────────────────────────────────────────
+name: CI
+
+on:
+  push:
+    branches: [main, develop, "feature/**", "fix/**", "chore/**"]
+  pull_request:
+    branches: [main, develop]
+
+# Cancel in-progress runs for the same ref when a new commit lands.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  flutter:
+    name: Flutter (analyze · test · build web)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter 3.35.4
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.4"
+          channel: stable
+          cache: true
+
+      - name: Show toolchain
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Static analysis (strict-casts)
+        run: flutter analyze --no-fatal-warnings
+
+      - name: Run tests
+        run: flutter test --reporter expanded
+
+      - name: Build web (release)
+        run: flutter build web --release --no-tree-shake-icons
+
+      - name: Upload web bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulse-web-${{ github.sha }}
+          path: build/web
+          retention-days: 7
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────────────────────────────────
+  backend:
+    name: Backend (gradle build · test)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Gradle build (skip tests for speed of feedback)
+        run: ./gradlew --no-daemon clean build -x test
+
+      - name: Gradle test
+        run: ./gradlew --no-daemon test
+
+      - name: Upload boot jar
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulse-backend-${{ github.sha }}
+          path: backend/build/libs/*.jar
+          retention-days: 7
+          if-no-files-found: error

@@ -54,11 +54,19 @@ jobs:
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
 
-      - name: Static analysis (strict-casts)
-        run: flutter analyze --no-fatal-warnings
+      - name: Static analysis (strict-casts, fail on any finding)
+        run: flutter analyze --fatal-infos --fatal-warnings
 
-      - name: Run tests
-        run: flutter test --reporter expanded
+      - name: Run tests with coverage
+        run: flutter test --coverage --reporter expanded
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-coverage-${{ github.sha }}
+          path: coverage/lcov.info
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Build web (release)
         run: flutter build web --release --no-tree-shake-icons
@@ -108,3 +116,16 @@ jobs:
           path: backend/build/libs/*.jar
           retention-days: 7
           if-no-files-found: error
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker image build (smoke, no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/Dockerfile
+          push: false
+          tags: pulse-engage/backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

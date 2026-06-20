@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/time_utils.dart';
 import '../../core/widgets/glass_card.dart';
+import '../../models/models.dart';
 import '../../providers/app_provider.dart';
+import '../admin/admin_dashboard_screen.dart';
 import '../auth/login_screen.dart';
 import 'points_history_screen.dart';
 
@@ -235,6 +237,22 @@ class ProfileScreen extends StatelessWidget {
                   AppColors.ideas,
                   null,
                 ),
+                // V7: admin console entry — visible only to admins / super admins.
+                if (user.role == UserRole.admin ||
+                    user.role == UserRole.superAdmin)
+                  _menuTile(
+                    context,
+                    Icons.admin_panel_settings_rounded,
+                    'Admin Console',
+                    'Analytics, challenges & rewards',
+                    AppColors.primary,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminDashboardScreen(),
+                      ),
+                    ),
+                  ),
                 _menuTile(
                   context,
                   Icons.logout_rounded,
@@ -455,7 +473,13 @@ class ProfileScreen extends StatelessWidget {
               leading: const Icon(Icons.language_rounded),
               title: const Text('Language'),
               trailing: const Text('English'),
-              onTap: () {},
+              onTap: () {
+                ScaffoldMessenger.of(c).showSnackBar(
+                  const SnackBar(
+                    content: Text('Language settings coming soon'),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 8),
           ],

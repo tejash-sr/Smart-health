@@ -1,6 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- V6: step counting requires runtime permission on API 29+. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- V5: backend integration. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
-        android:label="pulse_engage"
+        android:label="Pulse Engage"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -43,3 +49,4 @@
         </intent>
     </queries>
 </manifest>
+

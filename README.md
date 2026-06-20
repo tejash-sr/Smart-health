@@ -66,29 +66,47 @@ Built with Flutter, designed for production.
 Feature-first modular structure:
 
 ```
-lib/
-├── core/
-│   ├── theme/        # Colors, typography, themes (light + dark)
-│   ├── widgets/      # Shared UI primitives (GlassCard, AvatarCircle…)
-│   └── utils/        # Date/number formatters
-├── models/           # Plain Dart entities
-├── services/         # Mock + future API/repository layer
-├── providers/        # State management (Provider)
-└── screens/
-    ├── auth/         # Splash, onboarding, login
-    ├── home/         # Dashboard, notifications
-    ├── steps/        # Step tracking & trust score
-    ├── water/        # Hydration
-    ├── challenges/   # Challenges feed
-    ├── leaderboard/  # Rankings
-    ├── rewards/      # Store & redemption
-    ├── social/       # Community wall
-    ├── events/       # Event registration
-    ├── doubts/       # Q&A
-    ├── ideas/        # Idea board
-    ├── coffee/       # Coffee roulette
-    ├── goals/        # Personal goals
-    └── profile/      # User profile
+flutter_app/
+├── lib/
+│   ├── core/
+│   │   ├── di/            # ServiceLocator (sl) — single source of truth for repos
+│   │   ├── error/         # Typed exceptions (Server, Cache, Unauthorized)
+│   │   ├── network/       # ApiClient + Result<T> (sealed Success/Failure)
+│   │   ├── sensors/       # V6 StepSensorService (Android pedometer, web-safe)
+│   │   ├── storage/       # LocalStorage (SharedPreferences) wrapper
+│   │   ├── theme/         # Colors, typography, light + dark Material 3 themes
+│   │   ├── widgets/       # Shared UI primitives (GlassCard, AvatarCircle…)
+│   │   └── utils/         # Date / number formatters
+│   ├── data/
+│   │   └── repositories/  # Repository contracts + Mock* impls (V5 cutover ready)
+│   ├── models/            # Plain Dart entities
+│   ├── services/          # MockData seed + service helpers
+│   ├── providers/         # AppProvider (wired through sl.* repositories)
+│   └── screens/
+│       ├── admin/         # V7 admin console (analytics, challenges, rewards)
+│       ├── auth/          # Splash, onboarding, login
+│       ├── home/          # Dashboard, notifications, main shell
+│       ├── steps/         # Step tracking & trust score
+│       ├── water/         # Hydration
+│       ├── challenges/    # Challenges feed
+│       ├── leaderboard/   # Rankings
+│       ├── rewards/       # Store & redemption
+│       ├── social/        # Community wall
+│       ├── events/        # Event registration
+│       ├── doubts/        # Q&A
+│       ├── ideas/         # Idea board
+│       ├── coffee/        # Coffee roulette
+│       ├── goals/         # Personal goals
+│       └── profile/       # User profile (+ admin entry tile)
+└── backend/               # V5 Spring Boot 3.3.5 / Java 21 / Postgres / Keycloak
+    ├── src/main/java/com/pulseengage/backend/
+    │   ├── api/            # Controllers + DTO records
+    │   ├── config/         # SecurityConfig + KeycloakRealmRolesConverter
+    │   ├── domain/         # JPA entities + repositories
+    │   ├── exception/      # Global @RestControllerAdvice
+    │   └── service/        # ChallengeService (explicit @Transactional)
+    ├── Dockerfile          # Multi-stage Temurin 21 build, non-root runtime
+    └── docker-compose.yml  # Postgres 15 + Keycloak 23 + backend
 ```
 
 ---
@@ -120,6 +138,8 @@ Every feature ships through `feature/*` → `develop` → `main`. Branches are p
 
 ## 🚀 Getting Started
 
+### Frontend (Flutter)
+
 ```bash
 # Install dependencies
 flutter pub get
@@ -137,6 +157,21 @@ flutter build web --release
 flutter build ios --release --no-codesign
 ```
 
+### Backend (Spring Boot)
+
+```bash
+cd backend
+docker compose up -d --build
+```
+
+Stack comes up on:
+- `http://localhost:8080` — Pulse backend (`/api/...`, `/actuator/*`)
+- `http://localhost:8081` — Keycloak admin (admin / admin in dev only)
+- `localhost:5432`         — PostgreSQL 15
+
+Full env-var matrix, API surface and error envelope documented in
+[`backend/README.md`](backend/README.md).
+
 ### 📱 Supported Platforms
 
 | Platform | Min Version | Status |
@@ -153,13 +188,15 @@ Bundle identifier is consistent across stores: `com.pulseengage.engage`.
 
 | Phase | Status |
 |-------|--------|
-| V1 — Wellness loop (steps, water, challenges, leaderboard, rewards) | ✅ Complete |
-| V2 — Community (social wall, events, recognition) | ✅ Complete |
-| V3 — Knowledge (doubts, ideas) | ✅ Complete |
-| V4 — Connection (coffee roulette, goals) | ✅ Complete |
-| V5 — Backend (Spring Boot + PostgreSQL + Keycloak) | 🚧 Planned |
-| V6 — Hardware sensor integration (Android pedometer / iOS HealthKit & CoreMotion) | 🚧 Planned |
-| V7 — Admin dashboard (challenge/reward management) | 🚧 Planned |
+| V1 — Wellness loop (steps, water, challenges, leaderboard, rewards) | ✅ Complete (1.0.0) |
+| V2 — Community (social wall, events, recognition) | ✅ Complete (1.0.0) |
+| V3 — Knowledge (doubts, ideas) | ✅ Complete (1.0.0) |
+| V4 — Connection (coffee roulette, goals) | ✅ Complete (1.0.0) |
+| V5 — Backend (Spring Boot 3.3.5 + PostgreSQL 15 + Keycloak 23) | ✅ Complete (1.1.0) |
+| V6 — Hardware sensor integration (Android pedometer, web-safe) | ✅ Complete (1.1.0) |
+| V7 — Admin dashboard (challenge / reward management, analytics) | ✅ Complete (1.1.0) |
+| V8 — Flyway migrations, Testcontainers, OpenAPI, audit log | 🚧 Planned |
+| V9 — Real-time notifications (WebSocket / FCM) | 🚧 Planned |
 
 ---
 

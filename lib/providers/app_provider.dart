@@ -1,16 +1,30 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import '../core/di/injection_container.dart';
+import '../core/network/result.dart';
 import '../models/models.dart';
 import '../services/mock_data.dart';
 
+/// Single source of truth for app-wide UI state.
+///
+/// Pulls data via the [ServiceLocator]-resolved repositories ([sl.userRepository],
+/// [sl.challengeRepository], [sl.socialRepository]) — when [kUseMockRepositories]
+/// is true those return mock data, when false they hit the V5 backend.
+///
+/// Eagerly seeds local lists from [MockData] so the UI has something to paint
+/// during the first frame, then refreshes asynchronously from the repositories
+/// so the rest of the screens never see a 'null' state.
 class AppProvider extends ChangeNotifier {
   AppProvider() {
     _init();
   }
 
-  // ===== State =====
+  // ─── State ─────────────────────────────────────────────────────────────────
   ThemeMode _themeMode = ThemeMode.dark;
   User _currentUser = MockData.currentUser;
+
   late List<Challenge> _challenges;
   late List<Reward> _rewards;
   late List<SocialPost> _posts;
@@ -24,11 +38,17 @@ class AppProvider extends ChangeNotifier {
   late StepRecord _todaySteps;
   late List<WaterLog> _waterLogs;
 
-  // Step simulation (anti-cheat trust score)
+  bool _loading = false;
+  String? _lastError;
+
+  // Step simulation (anti-cheat trust score). In production this is driven
+  // by the V6 StepSensorService; the timer is only a UI fallback so the
+  // 'today steps' card animates during demos on platforms without sensors.
   Timer? _stepTimer;
   int _liveSteps = 7842;
 
   void _init() {
+    // Synchronous seed so the UI never crashes on first build.
     _challenges = MockData.getChallenges();
     _rewards = MockData.getRewards();
     _posts = MockData.getSocialPosts();
@@ -42,7 +62,10 @@ class AppProvider extends ChangeNotifier {
     _todaySteps = MockData.todaySteps;
     _waterLogs = MockData.getTodayWaterLogs();
 
-    // Simulate live step counter increment every 8 seconds
+    // Kick off async hydration from repositories without blocking the UI.
+    // ignore: discarded_futures — fire-and-forget by design.
+    refreshAll();
+
     _stepTimer = Timer.periodic(const Duration(seconds: 8), (_) {
       _liveSteps += 12 + (DateTime.now().second % 18);
       _todaySteps = StepRecord(
@@ -63,7 +86,71 @@ class AppProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  // ===== Getters =====
+  // ─── Async hydration ───────────────────────────────────────────────────────
+
+  /// Pulls every top-level collection through the repository layer.
+  ///
+  /// Failures are non-fatal: the mock-seeded lists remain in place and
+  /// [_lastError] surfaces the first non-success so the UI can show a
+  /// transient banner without losing what's already on screen.
+  Future<void> refreshAll() async {
+    _loading = true;
+    _lastError = null;
+    notifyListeners();
+
+    try {
+      await Future.wait<void>([
+        _refreshCurrentUser(),
+        _refreshChallenges(),
+        _refreshPosts(),
+        _refreshPointsHistory(),
+      ]);
+    } catch (e, st) {
+      _lastError = e.toString();
+      debugPrint('AppProvider.refreshAll failed: $e\n$st');
+    } finally {
+      _loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _refreshCurrentUser() async {
+    final res = await sl.userRepository.getCurrentUser();
+    if (res is Success<User>) {
+      _currentUser = res.data;
+    } else if (res is Failure<User>) {
+      _lastError ??= res.message;
+    }
+  }
+
+  Future<void> _refreshChallenges() async {
+    final res = await sl.challengeRepository.getChallenges();
+    if (res is Success<List<Challenge>>) {
+      _challenges = List<Challenge>.from(res.data);
+    } else if (res is Failure<List<Challenge>>) {
+      _lastError ??= res.message;
+    }
+  }
+
+  Future<void> _refreshPosts() async {
+    final res = await sl.socialRepository.getFeed();
+    if (res is Success<List<SocialPost>>) {
+      _posts = List<SocialPost>.from(res.data);
+    } else if (res is Failure<List<SocialPost>>) {
+      _lastError ??= res.message;
+    }
+  }
+
+  Future<void> _refreshPointsHistory() async {
+    final res = await sl.userRepository.getPointsHistory(_currentUser.id);
+    if (res is Success<List<PointsTransaction>>) {
+      _pointsHistory = List<PointsTransaction>.from(res.data);
+    } else if (res is Failure<List<PointsTransaction>>) {
+      _lastError ??= res.message;
+    }
+  }
+
+  // ─── Getters ───────────────────────────────────────────────────────────────
   ThemeMode get themeMode => _themeMode;
   User get currentUser => _currentUser;
   List<Challenge> get challenges => _challenges;
@@ -90,7 +177,10 @@ class AppProvider extends ChangeNotifier {
   double get waterProgress =>
       (totalWaterMl / waterGoalMl).clamp(0.0, 1.0);
 
-  // ===== Actions =====
+  bool get isLoading => _loading;
+  String? get lastError => _lastError;
+
+  // ─── Actions ───────────────────────────────────────────────────────────────
   void toggleTheme() {
     _themeMode =
         _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
@@ -102,11 +192,22 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleLike(String postId) {
+  /// Optimistic like-toggle: update local state first, then ask the
+  /// repository to persist. On failure we roll the local state back.
+  Future<void> toggleLike(String postId) async {
     final post = _posts.firstWhere((p) => p.id == postId);
     post.liked = !post.liked;
     post.likes += post.liked ? 1 : -1;
     notifyListeners();
+
+    final res = await sl.socialRepository.likePost(postId);
+    if (res is Failure<void>) {
+      // Roll back on failure.
+      post.liked = !post.liked;
+      post.likes += post.liked ? 1 : -1;
+      _lastError = res.message;
+      notifyListeners();
+    }
   }
 
   void toggleDoubtUpvote(String id) {
@@ -140,6 +241,43 @@ class AppProvider extends ChangeNotifier {
       n.read = true;
     }
     notifyListeners();
+  }
+
+  /// Joins a challenge through the repository. Returns true on success so
+  /// the caller can show a snackbar.
+  Future<bool> joinChallenge(String challengeId) async {
+    final res = await sl.challengeRepository.joinChallenge(challengeId);
+    if (res is Success<void>) {
+      // Optimistic participant bump while we wait for the next refresh.
+      final idx = _challenges.indexWhere((c) => c.id == challengeId);
+      if (idx != -1) {
+        final c = _challenges[idx];
+        _challenges[idx] = Challenge(
+          id: c.id,
+          title: c.title,
+          description: c.description,
+          iconEmoji: c.iconEmoji,
+          type: c.type,
+          frequency: c.frequency,
+          status: c.status,
+          targetValue: c.targetValue,
+          currentValue: c.currentValue,
+          pointsReward: c.pointsReward,
+          startDate: c.startDate,
+          endDate: c.endDate,
+          participants: c.participants + 1,
+          unit: c.unit,
+          color: c.color,
+        );
+        notifyListeners();
+      }
+      return true;
+    }
+    if (res is Failure<void>) {
+      _lastError = res.message;
+      notifyListeners();
+    }
+    return false;
   }
 
   bool redeemReward(Reward reward) {

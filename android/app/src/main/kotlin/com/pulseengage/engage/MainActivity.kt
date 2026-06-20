@@ -1,5 +1,6 @@
-package com.pulseengage.pulse_engage
+package com.pulseengage.engage
 
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity : FlutterActivity()
+

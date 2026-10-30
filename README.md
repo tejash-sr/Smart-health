@@ -1,205 +1,118 @@
-# Pulse — Employee Engagement & Wellness Platform
+# Pulse — an employee engagement app people open every day
 
-> **Engage. Grow. Together.**
+> Pulse uses something people already care about, **their own steps and water**, as the daily reason to open the app. Team challenges, rewards, recognition, Q&A, ideas and events sit one tap away, so engagement grows from habit instead of reminders.
 
-A state-of-the-art employee engagement platform for modern workplaces (100-500 employees). Pulse uses wellness as the daily hook to drive community, knowledge sharing, and connection across teams.
-
-Built with Flutter, designed for production.
+**My own product, built solo** · Flutter (Android, iOS, web) + Spring Boot + Keycloak · **tested by 10+ colleagues at my office** on release APKs
 
 ---
 
-## ✨ Features
+## The problem
 
-### 🏃 Wellness
-- **Step Tracking** — Automatic, hardware-sensor based. No manual entry. No cheating.
-- **Hydration Tracking** — Daily water goal with streaks & quick-log
-- **Trust Score System** — Multi-signal anti-cheat with hardware verification, cadence checks, GPS consistency, device integrity
+My workplace already had an engagement tool, but it wasn't efficient. Engagement tools tend to fail the same way: they are a separate place employees have to *remember* to visit, so they get opened for one announcement and then forgotten. The things that make a workplace feel connected (recognition, cross-team friendships, sharing knowledge, healthy competition) need **daily** contact, not a monthly survey.
 
-### 🏆 Challenges
-- Individual & Team challenges (weekly, monthly)
-- Department vs Department competitions
-- Live progress tracking with participant counts
+## The idea
 
-### 🎁 Rewards Economy
-- Points-based redemption store
-- Vouchers, merchandise, time-off, experiences, food
-- Stock management, monthly redemption caps
-- Confetti celebrations 🎉
+Give people a selfish, healthy reason to open the app every day, then put the community features right next to it:
 
-### 🌟 Community
-- **Social Wall** — Achievements, recognition, milestones
-- **Coffee Roulette** — Random pairings for cross-team networking
-- **Recognition** — Public shoutouts that earn points
+| Daily hook | What keeps them there |
+|---|---|
+| 🏃 **Steps** from the phone's step sensor, no manual entry on Android | 🏆 **Challenges:** individual, team and department vs department, weekly or monthly |
+| 💧 **Water** goal with streaks and quick logging | 🎁 **Rewards store:** points for vouchers, merchandise, time off and experiences, with stock and monthly caps |
+| 🎯 **Personal goals** with streaks | 🌟 **Social wall and recognition:** public shoutouts that earn points |
+| | ☕ **Coffee roulette:** random cross-team pairings |
+| | 💡 **Ask a doubt** (an internal Q&A) and **share ideas** with voting |
+| | 📅 **Events** with registration, capacity and attendance points |
 
-### 💡 Knowledge
-- **Ask a Doubt** — Internal Stack Overflow for the company
-- **Share Ideas** — Innovation pipeline with voting & status tracking
-- Tags, upvotes, accepted answers
+Admins get a dashboard to manage challenges and rewards and see analytics.
 
-### 📅 Events
-- Workshops, hackathons, sports, wellness, social
-- Registration with capacity tracking
-- Point rewards for attendance
+## Why it's worth paying for
 
-### 🎯 Personal
-- Personal goals with streak tracking
-- Profile with achievements & analytics
-- Notifications hub
+- **Engagement that compounds.** A daily habit (steps, water) brings people back; every visit is a chance to see a shoutout, answer a question or join a challenge.
+- **Cross-team connection by design.** Department challenges and coffee roulette create contact that org charts don't.
+- **Knowledge stays inside the company.** Doubts and ideas become a searchable, upvoted record instead of lost chat messages.
+- **One codebase, every device.** Android, iOS and web from a single Flutter app.
 
----
+## Tested with real users
 
-## 🛠 Tech Stack
+I built release APKs and had **10+ colleagues at my office** install and use Pulse on their own phones.
 
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Framework | Flutter 3.35 | One codebase, native performance |
-| State | Provider | Simple, testable, scales to V2 |
-| Storage | Hive + SharedPreferences | Offline-first, blazing fast |
-| Theme | Material 3 + Google Fonts (Inter) | Modern, accessible |
-| Charts | fl_chart | Smooth, customizable |
-| Animations | flutter_animate | Declarative, performant |
+## Key design decisions
 
----
+| Decision | Why |
+|---|---|
+| **Wellness as the hook, community as the value** | People won't open an "engagement app" daily, but they will check their steps |
+| **Hardware step counting, not manual entry** (Android pedometer) | Typed-in steps make challenges meaningless; sensor data keeps competition fair |
+| **Offline-first storage** (Hive) with a compile-time switch between in-memory and live API repositories | The app is fast and fully demoable without a server; the same screens run against the real backend with one build flag |
+| **Keycloak for identity** (OAuth2/OIDC, roles mapped into Spring Security) | Companies already run single sign-on; Pulse plugs into it instead of storing passwords |
+| **Feature-first modules and GitFlow** (every feature on its own branch, merged through `develop`) | 14 feature areas built quickly without stepping on each other; history stays traceable |
 
-## 📂 Architecture
+## Status
 
-Feature-first modular structure:
+| Area | State |
+|---|---|
+| App: 14 feature areas (steps, water, challenges, leaderboard, rewards, social wall, events, Q&A, ideas, coffee roulette, goals, profile, admin, auth) | ✅ Built (1.1.0) |
+| Step counting | ✅ Android hardware sensor · iOS and web fall back to manual or demo data |
+| Backend: Spring Boot 3.3.5, PostgreSQL 15, Keycloak 23 (users, challenges and admin challenge endpoints) | ✅ Built (1.1.0) |
+| App on live backend for every feature (most screens use in-memory demo data today) | 🚧 Next |
+| Anti-cheat trust score (cadence checks, location consistency, device integrity) | 🚧 Planned; the `trustScore` field exists in the data model |
+| Flyway migrations, Testcontainers tests, OpenAPI docs, audit log | 🚧 Planned |
+| Real-time notifications (WebSocket / FCM) | 🚧 Planned |
 
-```
-flutter_app/
-├── lib/
-│   ├── core/
-│   │   ├── di/            # ServiceLocator (sl) — single source of truth for repos
-│   │   ├── error/         # Typed exceptions (Server, Cache, Unauthorized)
-│   │   ├── network/       # ApiClient + Result<T> (sealed Success/Failure)
-│   │   ├── sensors/       # V6 StepSensorService (Android pedometer, web-safe)
-│   │   ├── storage/       # LocalStorage (SharedPreferences) wrapper
-│   │   ├── theme/         # Colors, typography, light + dark Material 3 themes
-│   │   ├── widgets/       # Shared UI primitives (GlassCard, AvatarCircle…)
-│   │   └── utils/         # Date / number formatters
-│   ├── data/
-│   │   └── repositories/  # Repository contracts + Mock* impls (V5 cutover ready)
-│   ├── models/            # Plain Dart entities
-│   ├── services/          # MockData seed + service helpers
-│   ├── providers/         # AppProvider (wired through sl.* repositories)
-│   └── screens/
-│       ├── admin/         # V7 admin console (analytics, challenges, rewards)
-│       ├── auth/          # Splash, onboarding, login
-│       ├── home/          # Dashboard, notifications, main shell
-│       ├── steps/         # Step tracking & trust score
-│       ├── water/         # Hydration
-│       ├── challenges/    # Challenges feed
-│       ├── leaderboard/   # Rankings
-│       ├── rewards/       # Store & redemption
-│       ├── social/        # Community wall
-│       ├── events/        # Event registration
-│       ├── doubts/        # Q&A
-│       ├── ideas/         # Idea board
-│       ├── coffee/        # Coffee roulette
-│       ├── goals/         # Personal goals
-│       └── profile/       # User profile (+ admin entry tile)
-└── backend/               # V5 Spring Boot 3.3.5 / Java 21 / Postgres / Keycloak
-    ├── src/main/java/com/pulseengage/backend/
-    │   ├── api/            # Controllers + DTO records
-    │   ├── config/         # SecurityConfig + KeycloakRealmRolesConverter
-    │   ├── domain/         # JPA entities + repositories
-    │   ├── exception/      # Global @RestControllerAdvice
-    │   └── service/        # ChallengeService (explicit @Transactional)
-    ├── Dockerfile          # Multi-stage Temurin 21 build, non-root runtime
-    └── docker-compose.yml  # Postgres 15 + Keycloak 23 + backend
-```
+## Tech stack
 
----
+| Layer | Choice |
+|---|---|
+| App | Flutter 3.35, Provider, Hive + SharedPreferences, Material 3, fl_chart, flutter_animate, pedometer |
+| Backend | Spring Boot 3.3.5 on Java 21, Spring Data JPA, PostgreSQL 15, HikariCP |
+| Identity | Keycloak 23 (OAuth2 / OIDC resource server, stateless JWT) |
+| Delivery | Multi-stage Docker build (non-root runtime), Docker Compose for the full stack |
 
-## 🌿 Branching Strategy (GitFlow)
+## Run it
 
-```
-main             ← production-ready releases (tagged)
-  └── develop    ← integration branch for all features
-        ├── feature/auth
-        ├── feature/home-dashboard
-        ├── feature/steps-tracking
-        ├── feature/water-tracking
-        ├── feature/challenges
-        ├── feature/leaderboard
-        ├── feature/rewards
-        ├── feature/social-wall
-        ├── feature/events
-        ├── feature/doubts-qa
-        ├── feature/ideas-board
-        ├── feature/coffee-roulette
-        ├── feature/personal-goals
-        └── feature/profile
-```
-
-Every feature ships through `feature/*` → `develop` → `main`. Branches are preserved for traceability.
-
----
-
-## 🚀 Getting Started
-
-### Frontend (Flutter)
+**App**
 
 ```bash
-# Install dependencies
 flutter pub get
-
-# Run on web (preview)
-flutter run -d chrome
-
-# Build release APK
-flutter build apk --release
-
-# Build release Web bundle
-flutter build web --release
-
-# Build iOS (release, on macOS only)
-flutter build ios --release --no-codesign
+flutter run -d chrome                 # web preview with demo data
+flutter build apk --release           # Android APK
+flutter build ios --release --no-codesign   # iOS (macOS only)
 ```
 
-### Backend (Spring Boot)
+Point the app at a live backend with `--dart-define=PULSE_API_BASE_URL=<your API URL>`.
+
+**Backend**
 
 ```bash
 cd backend
 docker compose up -d --build
 ```
 
-Stack comes up on:
-- `http://localhost:8080` — Pulse backend (`/api/...`, `/actuator/*`)
-- `http://localhost:8081` — Keycloak admin (admin / admin in dev only)
-- `localhost:5432`         — PostgreSQL 15
+- `http://localhost:8080`: Pulse API (`/api/...`, `/actuator/*`)
+- `http://localhost:8081`: Keycloak admin (admin / admin, development only)
+- `localhost:5432`: PostgreSQL 15
 
-Full env-var matrix, API surface and error envelope documented in
-[`backend/README.md`](backend/README.md).
+The environment variables, API and error format are documented in [`backend/README.md`](backend/README.md).
 
-### 📱 Supported Platforms
+## Project layout
 
-| Platform | Min Version | Status |
-|----------|-------------|--------|
-| Android  | API 21 (5.0 Lollipop) | ✅ Production-ready |
-| iOS      | 13.0+ | ✅ Production-ready |
-| Web      | Chrome / Safari / Firefox / Edge (latest) | ✅ Production-ready |
+```
+lib/
+  core/          dependency injection, networking, sensors, storage, theme, shared widgets
+  data/          repositories (live API and in-memory demo implementations)
+  models/        domain models
+  providers/     app state
+  screens/       one folder per feature area
+backend/
+  src/main/java/com/pulseengage/backend/
+    api/         controllers and DTO records
+    config/      security and Keycloak role mapping
+    domain/      JPA entities and repositories
+    exception/   global error handling
+    service/     business logic with explicit transactions
+```
 
-Bundle identifier is consistent across stores: `com.pulseengage.engage`.
+Release notes are in [`CHANGELOG.md`](CHANGELOG.md).
 
----
+## License
 
-## 🗺 Roadmap
-
-| Phase | Status |
-|-------|--------|
-| V1 — Wellness loop (steps, water, challenges, leaderboard, rewards) | ✅ Complete (1.0.0) |
-| V2 — Community (social wall, events, recognition) | ✅ Complete (1.0.0) |
-| V3 — Knowledge (doubts, ideas) | ✅ Complete (1.0.0) |
-| V4 — Connection (coffee roulette, goals) | ✅ Complete (1.0.0) |
-| V5 — Backend (Spring Boot 3.3.5 + PostgreSQL 15 + Keycloak 23) | ✅ Complete (1.1.0) |
-| V6 — Hardware sensor integration (Android pedometer, web-safe) | ✅ Complete (1.1.0) |
-| V7 — Admin dashboard (challenge / reward management, analytics) | ✅ Complete (1.1.0) |
-| V8 — Flyway migrations, Testcontainers, OpenAPI, audit log | 🚧 Planned |
-| V9 — Real-time notifications (WebSocket / FCM) | 🚧 Planned |
-
----
-
-## 📄 License
-
-Proprietary — built for production deployment in workplace settings.
+Proprietary. © 2026 Pulse Engage. All rights reserved. See [`LICENSE`](LICENSE).

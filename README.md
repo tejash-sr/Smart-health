@@ -16,7 +16,7 @@ Give people a selfish, healthy reason to open the app every day, then put the co
 
 | Daily hook | What keeps them there |
 |---|---|
-| 🏃 **Steps** from the phone's step sensor, no manual entry on Android | 🏆 **Challenges:** individual, team and department vs department, weekly or monthly |
+| 🏃 **Steps** tracked daily, designed for the phone's step sensor | 🏆 **Challenges:** individual, team and department vs department, weekly or monthly |
 | 💧 **Water** goal with streaks and quick logging | 🎁 **Rewards store:** points for vouchers, merchandise, time off and experiences, with stock and monthly caps |
 | 🎯 **Personal goals** with streaks | 🌟 **Social wall and recognition:** public shoutouts that earn points |
 | | ☕ **Coffee roulette:** random cross-team pairings |
@@ -41,17 +41,27 @@ I built release APKs and had **10+ colleagues at my office** install and use Pul
 | Decision | Why |
 |---|---|
 | **Wellness as the hook, community as the value** | People won't open an "engagement app" daily, but they will check their steps |
-| **Hardware step counting, not manual entry** (Android pedometer) | Typed-in steps make challenges meaningless; sensor data keeps competition fair |
+| **Built for hardware step counting, not manual entry** (Android pedometer service) | Typed-in steps make challenges meaningless; sensor data keeps competition fair |
 | **Offline-first storage** (Hive) with a compile-time switch between in-memory and live API repositories | The app is fast and fully demoable without a server; the same screens run against the real backend with one build flag |
 | **Keycloak for identity** (OAuth2/OIDC, roles mapped into Spring Security) | Companies already run single sign-on; Pulse plugs into it instead of storing passwords |
 | **Feature-first modules and GitFlow** (every feature on its own branch, merged through `develop`) | 14 feature areas built quickly without stepping on each other; history stays traceable |
+
+## How I used AI, and what I checked myself
+
+I used AI assistants for the repetitive parts: scaffolding Flutter screens across 14 feature areas, demo data, and Spring Boot boilerplate. The product decisions (wellness as the hook, which features to build, the data model) were mine, and so were the rules about **security and fairness**, because that is exactly where generated code looks right and is wrong:
+
+- **Admin roles that silently don't work.** A standard Spring Security setup reads only the token's `scope` claim, so Keycloak realm roles such as `ADMIN` are ignored and every `@PreAuthorize("hasRole('ADMIN')")` check fails. Pulse maps Keycloak's `realm_access.roles` into Spring `ROLE_*` authorities with a custom `KeycloakRealmRolesConverter` ([`SecurityConfig.java`](backend/src/main/java/com/pulseengage/backend/config/SecurityConfig.java)).
+- **Step counts that would make leaderboards unfair.** The Android pedometer reports steps since the phone last rebooted, not steps today. Using that number directly would put someone who never restarts their phone at the top of every challenge. Daily steps need a per-device midnight baseline, which is part of connecting the sensor (next on the list).
+- **Transactions made explicit.** Creating and changing challenges runs inside explicit transaction boundaries (`ChallengeService`), so a half-applied change can't leave a challenge's rules or rewards inconsistent.
+
+**My rule:** AI drafts the code; anything touching security, points or fairness, I decide and verify.
 
 ## Status
 
 | Area | State |
 |---|---|
 | App: 14 feature areas (steps, water, challenges, leaderboard, rewards, social wall, events, Q&A, ideas, coffee roulette, goals, profile, admin, auth) | ✅ Built (1.1.0) |
-| Step counting | ✅ Android hardware sensor · iOS and web fall back to manual or demo data |
+| Step counting | ⚠️ Android sensor service built (pedometer); the steps screen still shows simulated steps for demos. Connecting the sensor, with a daily baseline, is next |
 | Backend: Spring Boot 3.3.5, PostgreSQL 15, Keycloak 23 (users, challenges and admin challenge endpoints) | ✅ Built (1.1.0) |
 | App on live backend for every feature (most screens use in-memory demo data today) | 🚧 Next |
 | Anti-cheat trust score (cadence checks, location consistency, device integrity) | 🚧 Planned; the `trustScore` field exists in the data model |
